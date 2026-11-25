@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>DeadlineKu - Pengingat Deadline HP</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-hover: #263348;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+      padding-bottom: 80px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand p {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .clock-badge {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a5b4fc;
+      text-align: right;
+    }
+
+    .notif-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(16, 185, 129, 0.12));
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .notif-banner-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .notif-status {
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .status-granted { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-default { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .status-denied { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      transition: all 0.15s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--card-hover);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tab {
+      background: var(--card);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 7px 13px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .deadline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .deadline-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: 14px;
+      padding: 14px;
+      transition: transform 0.15s ease;
+    }
+
+    .deadline-item.prio-tinggi { border-left-color: var(--danger); }
+    .deadline-item.prio-sedang { border-left-color: var(--warning); }
+    .deadline-item.prio-rendah { border-left-color: var(--success); }
+    .deadline-item.completed {
+      opacity: 0.6;
+      border-left-color: var(--muted);
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .item-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .completed .item-title {
+      text-decoration: line-through;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-cat { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+
+    .item-meta {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    .countdown-box {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .countdown-urgent { color: #f87171; border-color: rgba(239, 68, 68, 0.4); }
+    .countdown-soon { color: #fbbf24; }
+    .countdown-ok { color: #34d399; }
+
+    .item-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.76rem;
+      border-radius: 8px;
+    }
+
+    .btn-done { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .btn-ics { background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .btn-del { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      font-size: 0.9rem;
+    }
+
+    /* Modal Alarm In-App */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--card);
+      border: 2px solid var(--warning);
+      border-radius: 18px;
+      padding: 22px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      animation: popIn 0.25s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-bottom: 6px;
+    }
+
+    .modal-desc {
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>⏰ DeadlineKu</h1>
+        <p>Pengingat Tugas & Notifikasi HP</p>
+      </div>
+      <div class="clock-badge" id="liveClock">--:--:--</div>
+    </header>
+
+    <!-- Panel Izin Notifikasi HP -->
+    <div class="notif-banner">
+      <div class="notif-banner-top">
+        <div class="notif-status">
+          <span id="notifPill" class="status-pill status-default">Mengecek Izin...</span>
+          <div id="notifText">Aktifkan izin notifikasi agar HP berbunyi & muncul pop-up saat deadline tiba.</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="btnEnableNotif" onclick="requestNotifPermission()">🔔 Aktifkan Notifikasi HP</button>
+        <button class="btn-secondary" onclick="testNotification()">🔊 Tes Bunyi & Notif</button>
+      </div>
+    </div>
+
+    <!-- Statistik Singkat -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="statActive">0</div>
+        <div class="stat-label">Aktif</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color: #f87171;" id="statUrgent">0</div>
+        <div class="stat-label">&lt; 24 Jam</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color: #34d399;" id="statDone">0</div>
+        <div class="stat-label">Selesai</div>
+      </div>
+    </div>
+
+    <!-- Form Tambah Deadline -->
+    <div class="card">
+      <div class="card-title">➕ Tambah Pengingat Deadline</div>
+      <form id="deadlineForm">
+        <div class="form-group">
+          <label for="title">Nama Tugas / Kegiatan *</label>
+          <input type="text" id="title" placeholder="Contoh: Kumpul Laporan Proyek" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dueDate">Tanggal & Jam Deadline *</label>
+            <input type="datetime-local" id="dueDate" required />
+          </div>
+          <div class="form-group">
+            <label for="remindBefore">Ingatkan Sebelumnya</label>
+            <select id="remindBefore">
+              <option value="0">Tepat saat deadline</option>
+              <option value="5">5 menit sebelumnya</option>
+              <option value="15" selected>15 menit sebelumnya</option>
+              <option value="30">30 menit sebelumnya</option>
+              <option value="60">1 jam sebelumnya</option>
+              <option value="180">3 jam sebelumnya</option>
+              <option value="1440">1 hari sebelumnya</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="category">Kategori</label>
+            <select id="category">
+              <option value="Kuliah / Sekolah">📚 Kuliah / Sekolah</option>
+              <option value="Pekerjaan">💼 Pekerjaan</option>
+              <option value="Tagihan">💳 Tagihan</option>
+              <option value="Pribadi">🏠 Pribadi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="priority">Prioritas</label>
+            <select id="priority">
+              <option value="tinggi">🔴 Tinggi</option>
+              <option value="sedang" selected>🟡 Sedang</option>
+              <option value="rendah">🟢 Rendah</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Catatan (Opsional)</label>
+          <input type="text" id="notes" placeholder="Link pengumpulan, syarat, dll..." />
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.95rem;">
+          Simpan Pengingat
+        </button>
+      </form>
+    </div>
+
+    <!-- Filter Daftar -->
+    <div class="tabs">
+      <button class="tab active" onclick="setFilter('all', this)">Semua</button>
+      <button class="tab" onclick="setFilter('active', this)">Aktif</button>
+      <button class="tab" onclick="setFilter('urgent', this)">Mendesak</button>
+      <button class="tab" onclick="setFilter('done', this)">Selesai</button>
+    </div>
+
+    <!-- Daftar Deadline -->
+    <div id="deadlineList" class="deadline-list"></div>
+  </div>
+
+  <!-- Modal Alarm In-App -->
+  <div class="modal-overlay" id="alarmModal">
+    <div class="modal-box">
+      <div class="modal-icon">🚨</div>
+      <div class="modal-title" id="modalTitle">PENGINGAT DEADLINE!</div>
+      <div class="modal-desc" id="modalDesc">Waktunya menyelesaikan tugas Anda.</div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="snoozeAlarm()">Tunda 5 Menit</button>
+        <button class="btn-primary" onclick="closeAlarmModal()">Oke, Mengerti</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'deadlineku_tasks_v1';
+    let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let currentFilter = 'all';
+    let activeAlarmTaskId = null;
+    let swRegistration = null;
+
+    // Registrasi Service Worker jika berjalan di HTTP/HTTPS (PWA)
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => { swRegistration = reg; })
+        .catch(() => {});
+    }
+
+    // Set default datetime input ke 1 jam dari sekarang
+    function setDefaultDateTime() {
+      const now = new Date(Date.now() + 60 * 60 * 1000);
+      const offset = now.getTimezoneOffset() * 60000;
+      const localISOTime = new Date(now - offset).toISOString().slice(0, 16);
+      document.getElementById('dueDate').value = localISOTime;
+    }
+
+    // Update UI status izin notifikasi
+    function updateNotifUI() {
+      const pill = document.getElementById('notifPill');
+      const text = document.getElementById('notifText');
+      const btn = document.getElementById('btnEnableNotif');
+
+      if (!('Notification' in window)) {
+        pill.className = 'status-pill status-denied';
+        pill.textContent = 'Browser Tidak Mendukung Push';
+        text.textContent = 'Gunakan tombol "Kalender HP (.ics)" di tiap tugas agar muncul notifikasi bawaan HP.';
+        btn.style.display = 'none';
+        return;
+      }
+
+      if (Notification.permission === 'granted') {
+        pill.className = 'status-pill status-granted';
+        pill.textContent = 'Notifikasi HP Aktif ✓';
+        text.textContent = 'HP akan memunculkan notifikasi, getar, dan bunyi alarm saat pengingat tiba.';
+        btn.style.display = 'none';
+      } else if (Notification.permission === 'denied') {
+        pill.className = 'status-pill status-denied';
+        pill.textContent = 'Izin Diblokir Browser';
+        text.textContent = 'Aktifkan izin notifikasi di Pengaturan Situs browser HP, atau gunakan tombol Kalender HP (.ics).';
+        btn.style.display = 'none';
+      } else {
+        pill.className = 'status-pill status-default';
+        pill.textContent = 'Notifikasi Belum Diaktifkan';
+        text.textContent = 'Ketuk tombol di bawah untuk mengizinkan notifikasi pop-up di layar HP.';
+        btn.style.display = 'inline-block';
+      }
+    }
+
+    async function requestNotifPermission() {
+      playAlarmSound(); // Unlock audio context on mobile gesture
+      if (!('Notification' in window)) {
+        alert('Browser Anda tidak mendukung Web Notification. Gunakan fitur "Simpan ke Kalender HP (.ics)" pada setiap tugas.');
+        return;
+      }
+      try {
+        const perm = await Notification.requestPermission();
+        updateNotifUI();
+        if (perm === 'granted') {
+          triggerMobileNotification('Notifikasi Aktif!', 'DeadlineKu siap mengingatkan jadwal Anda di HP.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Bunyi Alarm menggunakan Web Audio API (100% Offline, tanpa file MP3 luar)
+    function playAlarmSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const notes = [587.33, 783.99, 1046.50]; // D5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.16);
+          gain.gain.setValueAtTime(0.25, ctx.currentTime + idx * 0.16);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.16 + 0.45);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.16);
+          osc.stop(ctx.currentTime + idx * 0.16 + 0.45);
+        });
+      } catch (e) {
+        console.log('Audio diblokir sampai layar disentuh:', e);
+      }
+    }
+
+    // Kirim Notifikasi ke HP (Service Worker -> Fallback Notification API -> Getar & Suara)
+    function triggerMobileNotification(title, body, taskId = null) {
+      playAlarmSound();
+      if ('vibrate' in navigator) {
+        navigator.vibrate([400, 150, 400, 150, 600]);
+      }
+
+      // Tampilkan modal di dalam aplikasi
+      activeAlarmTaskId = taskId;
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalDesc').textContent = body;
+      document.getElementById('alarmModal').classList.add('show');
+
+      // Kirim System Notification HP
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const options = {
+          body: body,
+          vibrate: [300, 100, 300],
+          tag: taskId ? 'deadline-' + taskId : 'deadline-test',
+          renotify: true,
+          requireInteraction: true
+        };
+
+        if (swRegistration && swRegistration.showNotification) {
+          swRegistration.showNotification(title, options);
+        } else {
+          try {
+            new Notification(title, options);
+          } catch (e) {
+            // Android Chrome tanpa HTTPS membutuhkan Service Worker
+            console.log('Fallback ke in-app modal & audio:', e);
+          }
+        }
+      }
+    }
+
+    function testNotification() {
+      triggerMobileNotification(
+        '🔔 Tes Pengingat HP Berhasil!',
+        'Suara, getar, dan notifikasi pengingat deadline Anda berfungsi dengan baik.'
+      );
+    }
+
+    function closeAlarmModal() {
+      document.getElementById('alarmModal').classList.remove('show');
+      activeAlarmTaskId = null;
+    }
+
+    function snoozeAlarm() {
+      if (activeAlarmTaskId) {
+        const task = tasks.find(t => t.id === activeAlarmTaskId);
+        if (task) {
+          task.snoozeUntil = Date.now() + 5 * 60 * 1000;
+          task.snoozeNotified = false;
+          saveTasks();
+        }
+      }
+      closeAlarmModal();
+    }
+
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    document.getElementById('deadlineForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      playAlarmSound(); // Unlock audio on submit
+
+      const title = document.getElementById('title').value.trim();
+      const dueDate = document.getElementById('dueDate').value;
+      const remindBefore = parseInt(document.getElementById('remindBefore').value, 10);
+      const category = document.getElementById('category').value;
+      const priority = document.getElementById('priority').value;
+      const notes = document.getElementById('notes').value.trim();
+
+      if (!title || !dueDate) return;
+
+      const newTask = {
+        id: Date.now().toString(),
+        title,
+        dueTimestamp: new Date(dueDate).getTime(),
+        remindBeforeMinutes: remindBefore,
+        category,
+        priority,
+        notes,
+        completed: false,
+        preNotified: remindBefore === 0,
+        dueNotified: false,
+        snoozeUntil: null,
+        snoozeNotified: false
+      };
+
+      tasks.push(newTask);
+      saveTasks();
+
+      document.getElementById('title').value = '';
+      document.getElementById('notes').value = '';
+      setDefaultDateTime();
+    });
+
+    function toggleComplete(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveTasks();
+      }
+    }
+
+    function deleteTask(id) {
+      if (confirm('Hapus pengingat deadline ini?')) {
+        tasks = tasks.filter(t => t.id !== id);
+        saveTasks();
+      }
+    }
+
+    function setFilter(filter, btnEl) {
+      currentFilter = filter;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btnEl.classList.add('active');
+      renderTasks();
+    }
+
+    // Export langsung ke Kalender Bawaan HP (.ics) agar notifikasi HP jalan 100% di background
+    function downloadICS(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      const formatICSDate = (ms) => {
+        const d = new Date(ms);
+        return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      const startStr = formatICSDate(task.dueTimestamp);
+      const endStr = formatICSDate(task.dueTimestamp + 30 * 60 * 1000);
+      const remindMin = task.remindBeforeMinutes || 15;
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//DeadlineKu//Pengingat HP//ID',
+        'BEGIN:VEVENT',
+        `UID:deadlineku-${task.id}@local`,
+        `DTSTAMP:${formatICSDate(Date.now())}`,
+        `DTSTART:${startStr}`,
+        `DTEND:${endStr}`,
+        `SUMMARY:⏰ DEADLINE: ${task.title}`,
+        `DESCRIPTION:Kategori: ${task.category}\nPrioritas: ${task.priority.toUpperCase()}\nCatatan: ${task.notes || '-'}`,
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        `DESCRIPTION:Pengingat Deadline: ${task.title}`,
+        `TRIGGER:-PT${remindMin}M`,
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('
+');
+
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Deadline_${task.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function formatCountdown(diffMs) {
+      if (diffMs <= 0) return '⚠️ WAKTU HABIS / TERLEWAT';
+      const totalSec = Math.floor(diffMs / 1000);
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+
+      const pad = n => String(n).padStart(2, '0');
+      if (days > 0) return `${days} hari ${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+      return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+    }
+
+    function renderTasks() {
+      const listEl = document.getElementById('deadlineList');
+      const now = Date.now();
+
+      // Update statistik
+      const activeTasks = tasks.filter(t => !t.completed);
+      const urgentTasks = activeTasks.filter(t => (t.dueTimestamp - now) <= 24 * 3600 * 1000);
+      const doneTasks = tasks.filter(t => t.completed);
+
+      document.getElementById('statActive').textContent = activeTasks.length;
+      document.getElementById('statUrgent').textContent = urgentTasks.length;
+      document.getElementById('statDone').textContent = doneTasks.length;
+
+      // Filter & Urutkan berdasarkan waktu terdekat
+      let filtered = [...tasks].sort((a, b) => a.dueTimestamp - b.dueTimestamp);
+      if (currentFilter === 'active') filtered = filtered.filter(t => !t.completed);
+      if (currentFilter === 'urgent') filtered = filtered.filter(t => !t.completed && (t.dueTimestamp - now) <= 24 * 3600 * 1000);
+      if (currentFilter === 'done') filtered = filtered.filter(t => t.completed);
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="empty-state">Belum ada daftar deadline pada kategori ini.<br>Tambahkan jadwal baru di atas!</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(task => {
+        const diff = task.dueTimestamp - now;
+        const dateFormatted = new Date(task.dueTimestamp).toLocaleString('id-ID', {
+          weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+
+        let cdClass = 'countdown-ok';
+        if (diff <= 0) cdClass = 'countdown-urgent';
+        else if (diff <= 3 * 3600 * 1000) cdClass = 'countdown-urgent';
+        else if (diff <= 24 * 3600 * 1000) cdClass = 'countdown-soon';
+
+        return `
+          <div class="deadline-item prio-${task.priority} ${task.completed ? 'completed' : ''}">
+            <div class="item-header">
+              <div class="item-title">${escapeHtml(task.title)}</div>
+              <span class="badge badge-cat">${escapeHtml(task.category)}</span>
+            </div>
+            <div class="item-meta">
+              📅 <strong>${dateFormatted}</strong> • Pengingat: ${task.remindBeforeMinutes === 0 ? 'Tepat waktu' : task.remindBeforeMinutes + ' mnt sebelumnya'}
+              ${task.notes ? `<br>📝 ${escapeHtml(task.notes)}` : ''}
+            </div>
+            ${!task.completed ? `
+              <div class="countdown-box ${cdClass}">
+                <span>Sisa Waktu:</span>
+                <span class="cd-timer" data-due="${task.dueTimestamp}">${formatCountdown(diff)}</span>
+              </div>
+            ` : ''}
+            <div class="item-actions">
+              <button class="btn-sm btn-done" onclick="toggleComplete('${task.id}')">
+                ${task.completed ? '↩️ Batal Selesai' : '✅ Selesai'}
+              </button>
+              <button class="btn-sm btn-ics" onclick="downloadICS('${task.id}')">
+                📲 Kalender HP (.ics)
+              </button>
+              <button class="btn-sm btn-del" onclick="deleteTask('${task.id}')">
+                🗑️ Hapus
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // Loop Utama: Cek Waktu & Picu Notifikasi Setiap Detik
+    setInterval(() => {
+      const now = Date.now();
+      document.getElementById('liveClock').textContent = new Date(now).toLocaleTimeString('id-ID');
+
+      // Update teks countdown tanpa re-render penuh
+      document.querySelectorAll('.cd-timer').forEach(el => {
+        const due = parseInt(el.getAttribute('data-due'), 10);
+        el.textContent = formatCountdown(due - now);
+      });
+
+      let changed = false;
+      tasks.forEach(task => {
+        if (task.completed) return;
+
+        // 1. Cek Pengingat Awal (misal 15 menit sebelumnya)
+        const remindTime = task.dueTimestamp - (task.remindBeforeMinutes * 60 * 1000);
+        if (!task.preNotified && now >= remindTime && now < task.dueTimestamp) {
+          task.preNotified = true;
+          changed = true;
+          triggerMobileNotification(
+            `⏳ Pengingat (${task.remindBeforeMinutes} Menit Lagi)`,
+            `Tugas "${task.title}" akan berakhir segera!`,
+            task.id
+          );
+        }
+
+        // 2. Cek Tepat Waktu Deadline
+        if (!task.dueNotified && now >= task.dueTimestamp) {
+          task.dueNotified = true;
+          changed = true;
+          triggerMobileNotification(
+            `🚨 DEADLINE TIBA: ${task.title}`,
+            `Batas waktu untuk "${task.title}" (${task.category}) telah tiba!`,
+            task.id
+          );
+        }
+
+        // 3. Cek Snooze (Tunda 5 Menit)
+        if (task.snoozeUntil && !task.snoozeNotified && now >= task.snoozeUntil) {
+          task.snoozeNotified = true;
+          changed = true;
+          triggerMobileNotification(
+            `⏰ Pengingat Ulang: ${task.title}`,
+            `Waktu tunda 5 menit selesai. Segera selesaikan "${task.title}"!`,
+            task.id
+          );
+        }
+      });
+
+      if (changed) saveTasks();
+    }, 1000);
+
+    // Inisialisasi awal
+    setDefaultDateTime();
+    updateNotifUI();
+    renderTasks();
+  </script>
+</body>
+</html>
